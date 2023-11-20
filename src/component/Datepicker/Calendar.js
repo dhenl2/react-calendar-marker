@@ -9,6 +9,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 // import DateDisplay from './DateDisplay'
 import { Badge, Box, IconButton } from '@mui/material'
 import Circle from "./Circle";
+import { createEvents } from "ics";
 
 export const AM_SHIFT = {
     background: "#81d4fa",
@@ -42,6 +43,69 @@ export const NIGHT_SHIFT = {
         borderColor: "#7e57c2"
     }
 };
+
+async function createCalendarEvents(dates) {
+    const events = [];
+    const duration = { hours: 8, minutes: 30};
+    const description = "Cutie off to work \u2665";
+    const location = "Mater Hospital";
+    const alarms = [
+        {
+            action: "display",
+            description: "Reminder",
+            trigger: {
+                before: true,
+                days: 1
+            }
+        },
+        {
+            action: "display",
+            description: "Reminder",
+            trigger: {
+                before: true,
+                hours: 1
+            }
+        }
+    ]
+    for (const [date, style] of dates) {
+        let start, title;
+        switch(style.background) {
+            case AM_SHIFT.background:
+                title = "AM";
+                start = [date.getFullYear(), date.getMonth() + 1, date.getDate(), 6, 45];
+                break;
+            case PM_SHIFT.background:
+                title = "PM";
+                start = [date.getFullYear(), date.getMonth() + 1, date.getDate(), 14, 45];
+                break;
+            case NIGHT_SHIFT.background:
+                title = "NIGHT";
+                start = [date.getFullYear(), date.getMonth() + 1, date.getDate(), 10, 45];
+                break;
+        }
+        events.push({
+            start,
+            duration,
+            title,
+            description,
+            alarms,
+            location
+        });
+    }
+    console.log(events);
+
+    // return;
+
+    return new Promise((resolve, reject) => {
+        createEvents(events, (error, value) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(value);
+            }
+        });
+    });
+}
 
 const Calendar = ({
                       initialDate,
@@ -113,6 +177,7 @@ const Calendar = ({
             if (counts[i] > 0) {
                 badgeContent.push(
                     <Circle
+                        key={1}
                         onCheck={() => {}}
                         checked={false}
                         label={counts[i]}
@@ -143,6 +208,28 @@ const Calendar = ({
                 {badgeContent}
             </Box>
         );
+    }
+
+    async function handleDownload() {
+        if (selectedDates.length === 0) {
+            return;
+        }
+
+        const content = await createCalendarEvents(selectedDates);
+        const filename = "shifts.ics"
+        const file = new File([content], filename, {type: "text/calendar"});
+        const url = URL.createObjectURL(file);
+        // trying to assign the file URL to a window could cause cross-site
+        // issues so this is a workaround using HTML5
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = filename;
+
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+
+        URL.revokeObjectURL(url);
     }
 
     return (
@@ -243,7 +330,7 @@ const Calendar = ({
                     </Box>
                     <Box pl={1}>
                         <Badge badgeContent={getBadgeCount()}>
-                            <IconButton>
+                            <IconButton onClick={handleDownload}>
                                 <DownloadIcon/>
                             </IconButton>
                         </Badge>

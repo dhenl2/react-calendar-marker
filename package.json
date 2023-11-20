@@ -16,6 +16,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "date-fns": "^2.30.0",
+    "ics": "^3.5.0",
     "jss": "^10.10.0",
     "jss-rtl": "^0.3.0",
     "moment": "^2.29.4",
