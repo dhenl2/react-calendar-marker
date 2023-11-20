@@ -44,6 +44,11 @@ export const NIGHT_SHIFT = {
     }
 };
 
+/**
+ * Create a list of events for a Calendar file (ics) based on the selected dates.
+ * @param dates Dates that have been selected.
+ * @returns {Promise<unknown>}
+ */
 async function createCalendarEvents(dates) {
     const events = [];
     const duration = { hours: 8, minutes: 30};
@@ -92,9 +97,6 @@ async function createCalendarEvents(dates) {
             location
         });
     }
-    console.log(events);
-
-    // return;
 
     return new Promise((resolve, reject) => {
         createEvents(events, (error, value) => {
@@ -121,7 +123,8 @@ const Calendar = ({
                       cancelButtonText,
                       submitButtonText,
                       selectedDatesTitle,
-                      shiftType
+                      shiftType,
+                      setShiftType
                   }) => {
     const calendar = useRef(null)
 
@@ -136,11 +139,11 @@ const Calendar = ({
         [setDisplayDate]
     );
 
-    const setShiftType = (newType) => {
-        if (shiftType.current === newType) {
-            shiftType.current = null;
+    const handleShiftChange = (newType) => {
+        if (shiftType === newType) {
+            setShiftType(null);
         } else {
-            shiftType.current = newType;
+            setShiftType(newType);
         }
     }
 
@@ -232,6 +235,23 @@ const Calendar = ({
         URL.revokeObjectURL(url);
     }
 
+    function setSelectedStyle(buttonShiftType, style) {
+        if (shiftType === buttonShiftType) {
+            return {
+                background:style.borderColor,
+                borderColor: style.background,
+                color: style[":hover"].color,
+                ":hover": {
+                    background: style.background,
+                    borderColor: style.borderColor,
+                    color: style.color
+                }
+            }
+        } else {
+            return style;
+        }
+    }
+
     return (
         <Box
             flex='1'
@@ -298,9 +318,9 @@ const Calendar = ({
                     <Box pr={1}>
                         <Button
                             variant={"contained"}
-                            sx={AM_SHIFT}
+                            sx={setSelectedStyle("AM", AM_SHIFT)}
                             onClick={() => {
-                                setShiftType("AM");
+                                handleShiftChange("AM");
                             }}
                         >
                             AM
@@ -309,9 +329,9 @@ const Calendar = ({
                     <Box pr={1} pl={1}>
                         <Button
                             variant={"contained"}
-                            sx={PM_SHIFT}
+                            sx={setSelectedStyle("PM", PM_SHIFT)}
                             onClick={() => {
-                                setShiftType("PM");
+                                handleShiftChange("PM");
                             }}
                         >
                             PM
@@ -320,9 +340,9 @@ const Calendar = ({
                     <Box pl={1} pr={1}>
                         <Button
                             variant={"contained"}
-                            sx={NIGHT_SHIFT}
+                            sx={setSelectedStyle("NIGHT", NIGHT_SHIFT)}
                             onClick={() => {
-                                setShiftType("NIGHT");
+                                handleShiftChange("NIGHT");
                             }}
                         >
                             NIGHT

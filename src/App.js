@@ -38,7 +38,7 @@ function getStyle(styleType) {
 
 function addDate(newDate, shiftType, dates) {
     const newSet = [...dates];
-    newSet.push([newDate, getStyle(shiftType.current)]);
+    newSet.push([newDate, getStyle(shiftType)]);
 
     return newSet;
 }
@@ -51,7 +51,7 @@ function modifyDate(index, epochDates, dates, shiftType) {
             console.log("change color");
             newDates.push([
                 new Date(epochDates.current[i]),
-                getStyle(shiftType.current)
+                getStyle(shiftType)
             ]);
 
         } else {
@@ -85,7 +85,7 @@ function App() {
     // https://stackoverflow.com/questions/46762199/material-ui-select-multiple-dates-with-calendar
     const [dates, setDates] = useState([])
     const epochDates = useRef([]);
-    const shiftType = useRef(null);
+    const [shiftType, setShiftType] = useState(null);
     console.log("curr Dates", dates);
 
     function onSelect(newDate) {
@@ -97,7 +97,7 @@ function App() {
             epochDates.current = newDates.map(([date, style]) => date.valueOf());
         }
 
-        if (shiftType.current === null) {
+        if (shiftType === null) {
             if (epochDates.current.includes(newDate.valueOf())) {
                 // remove item
                 update(removeDate(newDate, epochDates, dates));
@@ -108,9 +108,9 @@ function App() {
         }
 
         if (epochDates.current.includes(newDate.valueOf())) {
-            if (shiftType.current) {
+            if (shiftType) {
                 const index = epochDates.current.indexOf(newDate.valueOf());
-                if (dates[index][1].background !== getStyle(shiftType.current).background) {
+                if (dates[index][1].background !== getStyle(shiftType).background) {
                     update(modifyDate(index, epochDates, dates, shiftType));
                 } else {
                     update(removeDate(newDate, epochDates, dates));
@@ -129,6 +129,7 @@ function App() {
                 selectedDates={dates}
                 onSelect={onSelect}
                 shiftType={shiftType}
+                setShiftType={setShiftType}
             />
         </ThemeProvider>
     );
